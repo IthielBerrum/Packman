@@ -9,7 +9,7 @@ Exercises
 5. Make the ghosts smarter.
 """
 
-from random import choice
+from random import choice, random
 from turtle import *
 
 from freegames import floor, vector
@@ -103,7 +103,14 @@ def world():
                 path.dot(2, 'white')
 
 def move():
-    """Move pacman and all ghosts."""
+    """Move pacman and all ghosts.
+
+    Los fantasmas ahora persiguen a Pacman de forma inteligente:
+    al llegar a una pared, en vez de elegir una direccion al azar,
+    el 70% de las veces eligen la direccion valida que mas los
+    acerca a Pacman. El 30% restante sigue siendo al azar, para
+    que el juego no sea imposible de esquivar.
+    """
     writer.undo()
     writer.write(state['score'])
 
@@ -135,7 +142,19 @@ def move():
                 vector(0, 5),
                 vector(0, -5),
             ]
-            plan = choice(options)
+            valid_options = [o for o in options if valid(point + o)]
+
+            if valid_options:
+                if random() < 0.7:
+                    plan = min(
+                        valid_options,
+                        key=lambda o: abs((point + o) - pacman),
+                    )
+                else:
+                    plan = choice(valid_options)
+            else:
+                plan = choice(options)
+
             course.x = plan.x
             course.y = plan.y
 
